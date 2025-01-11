@@ -1,0 +1,165 @@
+version: "3.4"
+services:
+
+###########################################
+# OpeanSearch Start
+
+###########################################
+  # Master Node
+  os-master:
+    build: .
+    image: opensearchproject/opensearch:latest
+    container_name: os-master
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=os-master
+      - node.roles=master
+
+      - discovery.seed_hosts=os-master,os-node1,os-node2,os-node3
+      - cluster.initial_master_nodes=os-master
+
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m 
+      
+      - bootstrap.memory_lock=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Welcome@12#$34AB
+    ulimits:
+      memlock:
+        soft: -1 
+        hard: -1
+      nofile:
+        soft: 65536 
+        hard: 65536
+    ports:
+      - 9200:9200
+      - 9600:9600
+    volumes:
+      - os-master_data:/usr/share/opensearch/data 
+    networks:
+      - opensearch_net
+    # command: ["/bin/bash", "-c", "sleep 30; /usr/local/bin/initScript.sh"]
+
+  # Data Node1
+  os-node1:
+    image: opensearchproject/opensearch:latest
+    container_name: os-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=os-node1
+      - node.roles=data
+
+      - discovery.seed_hosts=os-master,os-node1,os-node2,os-node3
+      - cluster.initial_master_nodes=os-master
+
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m 
+        
+      - bootstrap.memory_lock=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Welcome@12#$34AB
+    ulimits:
+      memlock:
+        soft: -1 
+        hard: -1
+      nofile:
+        soft: 65536 
+        hard: 65536
+    volumes:
+      - os-node1_data:/usr/share/opensearch/data 
+    networks:
+      - opensearch_net
+
+  # Data Node2
+  os-node2:
+    image: opensearchproject/opensearch:latest
+    container_name: os-node2
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=os-node2
+      - node.roles=data
+
+      - discovery.seed_hosts=os-master,os-node1,os-node2,os-node3
+      - cluster.initial_master_nodes=os-master
+
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m 
+        
+      - bootstrap.memory_lock=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Welcome@12#$34AB
+    ulimits:
+      memlock:
+        soft: -1 
+        hard: -1
+      nofile:
+        soft: 65536 
+        hard: 65536
+    volumes:
+      - os-node2_data:/usr/share/opensearch/data 
+    networks:
+      - opensearch_net
+
+  # Data Node3
+  os-node3:
+    image: opensearchproject/opensearch:latest
+    container_name: os-node3
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=os-node3
+      - node.roles=data
+
+      - discovery.seed_hosts=os-master,os-node1,os-node2,os-node3
+      - cluster.initial_master_nodes=os-master
+
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m 
+      
+      - bootstrap.memory_lock=true
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Welcome@12#$34AB
+    ulimits:
+      memlock:
+        soft: -1 
+        hard: -1
+      nofile:
+        soft: 65536 
+        hard: 65536
+    volumes:
+      - os-node3_data:/usr/share/opensearch/data 
+    networks:
+      - opensearch_net
+
+###########################################
+# OpenSearch End
+###########################################
+
+###########################################
+# OpenSearch Dashboards Start
+###########################################
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      - 'OPENSEARCH_HOSTS=["http://os-master:9200","http://os-node1:9200", "http://os-node2:9200","http://os-node3:9200"]'
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
+    networks:
+      - opensearch_net
+
+###########################################
+# OpenSearch Dashboards End
+###########################################
+
+volumes:
+  os-master_data:
+  os-node1_data:
+  os-node2_data:
+  os-node3_data:
+
+networks:
+  opensearch_net:
